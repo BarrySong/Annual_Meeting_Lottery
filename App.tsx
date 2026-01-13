@@ -4,8 +4,9 @@ import { LotteryMachine } from './components/LotteryMachine';
 import { ParticipantManager } from './components/ParticipantManager';
 import { PrizeManager } from './components/PrizeManager';
 import { HistoryBoard } from './components/HistoryBoard';
+import { SettingsManager } from './components/SettingsManager';
 import { loadState, saveState } from './utils/storage';
-import { AppState, PageView, Participant, Prize, Winner } from './types';
+import { AppState, PageView, Participant, Prize, Winner, SiteConfig } from './types';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('lottery');
@@ -14,6 +15,7 @@ function App() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ brandName: 'CYPRESSTEL', logoUrl: '' });
 
   // Initialize
   useEffect(() => {
@@ -21,12 +23,13 @@ function App() {
     setParticipants(initialState.participants);
     setPrizes(initialState.prizes);
     setWinners(initialState.winners);
+    setSiteConfig(initialState.siteConfig);
   }, []);
 
   // Persist State
   useEffect(() => {
-    saveState({ participants, prizes, winners });
-  }, [participants, prizes, winners]);
+    saveState({ participants, prizes, winners, siteConfig });
+  }, [participants, prizes, winners, siteConfig]);
 
   const handleUpdateParticipants = (newParticipants: Participant[]) => {
     setParticipants(newParticipants);
@@ -36,17 +39,16 @@ function App() {
     setPrizes(newPrizes);
   };
 
-  const handleDrawComplete = (newWinners: Winner[]) => {
-    // 1. Add to winners history
-    setWinners(prev => [...prev, ...newWinners]);
+  const handleUpdateSiteConfig = (newConfig: SiteConfig) => {
+    setSiteConfig(newConfig);
+  };
 
-    // 2. Mark participants as winners (remove from pool)
+  const handleDrawComplete = (newWinners: Winner[]) => {
+    setWinners(prev => [...prev, ...newWinners]);
     const winnerIds = new Set(newWinners.map(w => w.participantId));
     setParticipants(prev => prev.map(p => 
         winnerIds.has(p.id) ? { ...p, isWinner: true } : p
     ));
-
-    // 3. Update prize counts
     if (newWinners.length > 0) {
         const prizeId = newWinners[0].prizeId;
         setPrizes(prev => prev.map(p => 
@@ -57,9 +59,7 @@ function App() {
 
   const handleClearHistory = () => {
       setWinners([]);
-      // Reset participant winner status
       setParticipants(prev => prev.map(p => ({ ...p, isWinner: false })));
-      // Reset prize counts
       setPrizes(prev => prev.map(p => ({ ...p, drawnCount: 0 })));
   };
 
@@ -98,13 +98,25 @@ function App() {
             onClearHistory={handleClearHistory}
           />
         );
+      case 'settings':
+        return (
+          <SettingsManager 
+            siteConfig={siteConfig} 
+            onUpdate={handleUpdateSiteConfig} 
+          />
+        );
       default:
         return <div>Not found</div>;
     }
   };
 
   return (
-    <Layout currentPage={currentPage} onNavigate={setCurrentPage} poolSize={availableCount}>
+    <Layout 
+      currentPage={currentPage} 
+      onNavigate={setCurrentPage} 
+      poolSize={availableCount}
+      siteConfig={siteConfig}
+    >
       {renderPage()}
     </Layout>
   );

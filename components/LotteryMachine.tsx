@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
-import { Trophy, Check, Sparkles, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trophy, Check, Sparkles, Zap, ChevronLeft, ChevronRight, Heart, Star, Flame } from 'lucide-react';
 import { Participant, Prize, Winner } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -9,6 +9,35 @@ interface LotteryMachineProps {
   prizes: Prize[];
   onDrawComplete: (winners: Winner[]) => void;
 }
+
+const FestiveDecoration = () => (
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    {/* Floating Lanterns */}
+    <div className="absolute top-10 left-[5%] animate-float-slow opacity-40">
+      <div className="w-12 h-16 bg-red-600 rounded-t-full relative shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-4 bg-yellow-500"></div>
+        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-2 bg-yellow-600 rounded-full"></div>
+      </div>
+    </div>
+    <div className="absolute top-32 right-[8%] animate-float-medium opacity-30">
+      <div className="w-10 h-14 bg-red-500 rounded-t-full relative shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-3 bg-yellow-400"></div>
+      </div>
+    </div>
+    
+    {/* Decorative Badges */}
+    <div className="absolute bottom-40 left-[10%] animate-pulse opacity-20 hidden xl:block">
+      <div className="flex flex-col items-center">
+        <div className="w-20 h-20 border-2 border-brand-primary/30 rounded-full flex items-center justify-center rotate-12">
+          <span className="text-brand-primary font-black text-[10px] tracking-widest uppercase">Lucky 2025</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Light Beams */}
+    <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-brand-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+  </div>
+);
 
 export const LotteryMachine: React.FC<LotteryMachineProps> = ({
   participants,
@@ -159,7 +188,7 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
           particleCount: 250, 
           spread: 120, 
           origin: { y: 0.5 }, 
-          colors: ['#0f6cff', '#00d6bb', '#ffffff', '#ffa600'],
+          colors: ['#0f6cff', '#00d6bb', '#ffffff', '#ffa600', '#ff0000'],
           gravity: 0.8
         });
         onDrawComplete(winners.map(w => ({ id: generateId(), participantId: w.id, prizeId: currentPrize.id, timestamp: Date.now() })));
@@ -188,8 +217,9 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Container moved up using -mt-24 to clear bottom nav */}
-      <div className="w-full flex flex-col items-center justify-center -mt-24">
+      <FestiveDecoration />
+
+      <div className="w-full flex flex-col items-center justify-center -mt-24 relative z-10">
         
         {/* Draw Animation Overlay */}
         <div className={`fixed inset-0 z-[60] bg-[#050810] transition-all duration-1000 flex flex-col items-center justify-center overflow-hidden ${isRunning ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -216,7 +246,6 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
                  </div>
               </div>
            </div>
-           {/* Stop button moved up from bottom-20 to bottom-40 to clear bottom nav */}
            <div className="absolute bottom-40">
               <button onClick={handleDraw} className="group relative px-28 py-10 bg-white text-brand-surface rounded-full text-4xl font-black hover:scale-105 transition-all shadow-[0_0_100px_rgba(15,108,255,0.4)] active:scale-95">
                 <span className="relative z-10 uppercase tracking-widest">停止抽奖</span>
@@ -227,8 +256,16 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
         {!isRunning && (
           <div className="animate-fade-in flex flex-col items-center w-full max-w-7xl">
             
-            {/* 3-Card Cinematic Stage */}
+            {/* Cinematic Stage */}
             <div className="relative flex items-center justify-center w-full h-80 mb-16">
+              
+              {/* Floating Emblems around Stage */}
+              <div className="absolute -top-10 left-1/4 animate-float-slow text-brand-accent/20">
+                <Heart size={40} />
+              </div>
+              <div className="absolute top-0 right-1/4 animate-float-medium text-brand-primary/20">
+                <Star size={30} fill="currentColor" />
+              </div>
               
               {/* Left Secondary Card */}
               {prizes.length > 1 && leftPrize && (
@@ -298,7 +335,13 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
             </div>
 
             {/* Info Section */}
-            <div className="text-center mb-10 w-full">
+            <div className="text-center mb-10 w-full relative">
+              {/* Small fire icon for 'hot' feeling */}
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex gap-1 opacity-40">
+                <Flame size={16} className="text-brand-warning animate-bounce" />
+                <Flame size={16} className="text-red-500 animate-bounce delay-75" />
+                <Flame size={16} className="text-brand-warning animate-bounce delay-150" />
+              </div>
               <h2 className="text-8xl font-black tracking-tighter text-white mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/30">{currentPrize?.name}</h2>
               <div className="flex items-center justify-center gap-8 opacity-60">
                 <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-white/20"></div>
@@ -325,11 +368,10 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
         )}
       </div>
 
-      {/* Decorative footer element - ensured it stays anchored */}
       <div className={`fixed bottom-28 right-12 transition-all duration-1000 ${isRunning ? 'translate-y-40 opacity-0' : 'translate-y-0 opacity-100'}`}>
           <div className="flex items-center gap-3 text-white/10 text-[10px] font-black uppercase tracking-[0.5em]">
              <Zap size={12} className="text-brand-accent animate-pulse" />
-             AI Precision 2.5
+             Annual Gala 2025
           </div>
       </div>
 
@@ -344,7 +386,7 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
             </div>
             <div className="flex flex-wrap justify-center gap-6 mb-12 max-h-[40vh] overflow-y-auto custom-scrollbar">
               {roundWinners.map(w => (
-                <div key={w.id} className="w-56 p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center group">
+                <div key={w.id} className="w-56 p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center group animate-scale-up">
                   <div className="w-20 h-20 bg-brand-primary/10 rounded-[28px] flex items-center justify-center text-4xl font-black text-brand-primary uppercase mb-4">
                     {w.name[0]}
                   </div>
@@ -368,6 +410,21 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
           0% { transform: translateX(20%); }
           100% { transform: translateX(-20%); }
         }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-30px) rotate(5deg); }
+        }
+        @keyframes float-medium {
+          0%, 100% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-20px) rotate(-10deg); }
+        }
+        @keyframes scale-up {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+        .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
+        .animate-scale-up { animation: scale-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-vortex {
           display: flex;
           animation: vortex 0.4s linear infinite;

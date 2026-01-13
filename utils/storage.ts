@@ -1,4 +1,4 @@
-import { AppState, Participant, Prize, Winner } from '../types';
+import { AppState, Participant, Prize, Winner, SiteConfig } from '../types';
 
 const STORAGE_KEY = 'cypresstel_lottery_data_v1';
 
@@ -10,6 +10,10 @@ const INITIAL_STATE: AppState = {
     { id: '3', name: '二等奖', count: 10, drawnCount: 0, description: '降噪耳机', image: 'https://picsum.photos/400/400?random=3' },
   ],
   winners: [],
+  siteConfig: {
+    brandName: 'CYPRESSTEL',
+    logoUrl: ''
+  }
 };
 
 export const loadState = (): AppState => {
@@ -18,7 +22,12 @@ export const loadState = (): AppState => {
     if (serializedState === null) {
       return INITIAL_STATE;
     }
-    return JSON.parse(serializedState);
+    const parsed = JSON.parse(serializedState);
+    // Ensure siteConfig exists for backward compatibility
+    if (!parsed.siteConfig) {
+      parsed.siteConfig = INITIAL_STATE.siteConfig;
+    }
+    return parsed;
   } catch (err) {
     console.error('Could not load state', err);
     return INITIAL_STATE;

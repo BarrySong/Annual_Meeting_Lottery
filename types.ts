@@ -22,10 +22,16 @@ export interface Winner {
   timestamp: number;
 }
 
+export interface SiteConfig {
+  logoUrl?: string;
+  brandName: string;
+}
+
 export interface AppState {
   participants: Participant[];
   prizes: Prize[];
   winners: Winner[];
+  siteConfig: SiteConfig;
 }
 
-export type PageView = 'lottery' | 'participants' | 'prizes' | 'history';
+export type PageView = 'lottery' | 'participants' | 'prizes' | 'history' | 'settings';

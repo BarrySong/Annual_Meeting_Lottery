@@ -1,20 +1,22 @@
 import React from 'react';
-import { Users, Gift, Trophy, MonitorPlay, Command, Sparkles, User } from 'lucide-react';
-import { PageView } from '../types';
+import { Users, Gift, Trophy, MonitorPlay, Command, Sparkles, User, Settings } from 'lucide-react';
+import { PageView, SiteConfig } from '../types';
 
 interface LayoutProps {
   currentPage: PageView;
   onNavigate: (page: PageView) => void;
   children: React.ReactNode;
-  poolSize?: number; // Added to pass pool size to header
+  poolSize?: number;
+  siteConfig: SiteConfig;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ currentPage, onNavigate, children, poolSize = 0 }) => {
+export const Layout: React.FC<LayoutProps> = ({ currentPage, onNavigate, children, poolSize = 0, siteConfig }) => {
   const navItems = [
     { id: 'lottery', label: '大厅', icon: MonitorPlay },
     { id: 'participants', label: '人员', icon: Users },
     { id: 'prizes', label: '奖池', icon: Gift },
     { id: 'history', label: '荣耀', icon: Trophy },
+    { id: 'settings', label: '设置', icon: Settings },
   ];
 
   return (
@@ -22,11 +24,15 @@ export const Layout: React.FC<LayoutProps> = ({ currentPage, onNavigate, childre
       {/* Cinematic Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-12 py-4 flex justify-between items-center pointer-events-none">
         <div className="flex items-center gap-4 pointer-events-auto">
-          <div className="p-2.5 bg-brand-primary/10 rounded-xl border border-brand-primary/20 backdrop-blur-md">
-            <Command className="text-brand-primary" size={20} />
+          <div className="p-2 bg-brand-primary/10 rounded-xl border border-brand-primary/20 backdrop-blur-md overflow-hidden flex items-center justify-center min-w-[40px] min-h-[40px]">
+            {siteConfig.logoUrl ? (
+              <img src={siteConfig.logoUrl} alt="logo" className="w-8 h-8 object-contain" />
+            ) : (
+              <Command className="text-brand-primary" size={20} />
+            )}
           </div>
           <div>
-            <h1 className="text-lg font-extrabold tracking-tighter text-white">CYPRESSTEL</h1>
+            <h1 className="text-lg font-extrabold tracking-tighter text-white uppercase">{siteConfig.brandName}</h1>
             <div className="flex items-center gap-2">
               <span className="text-[9px] text-brand-primary font-black uppercase tracking-[0.3em]">Annual Gala 2025</span>
               <div className="w-1 h-1 bg-brand-accent rounded-full animate-pulse"></div>
@@ -35,7 +41,6 @@ export const Layout: React.FC<LayoutProps> = ({ currentPage, onNavigate, childre
         </div>
 
         <div className="pointer-events-auto flex items-center gap-3">
-          {/* Prize Pool Stat Box - Integrated into header for consistency */}
           {currentPage === 'lottery' && (
             <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-2xl rounded-xl border border-white/5 min-w-[120px]">
               <div className="text-right">
@@ -48,7 +53,6 @@ export const Layout: React.FC<LayoutProps> = ({ currentPage, onNavigate, childre
             </div>
           )}
 
-          {/* System Status Box */}
           <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-2xl rounded-xl border border-white/5 min-w-[120px]">
             <div className="text-right">
               <div className="text-[10px] font-bold text-gray-300">系统就绪</div>
