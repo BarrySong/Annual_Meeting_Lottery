@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Gift, Plus, Trash2, Edit2, Package, Sparkles } from 'lucide-react';
+import { Gift, Plus, Trash2, Edit2, Package, Sparkles, Smile } from 'lucide-react';
 import { Prize } from '../types';
 import { generateId } from '../utils/storage';
 
@@ -8,12 +9,18 @@ interface PrizeManagerProps {
   setPrizes: (p: Prize[]) => void;
 }
 
+const COMMON_EMOJIS = [
+  '🎁', '📱', '💻', '🎧', '⌚️', '📷', '🎮', '🚗', '✈️', '🏝️', 
+  '💎', '🏆', '🥇', '🥈', '🥉', '🧧', '🧧', '💰', '🧧', '✨'
+];
+
 export const PrizeManager: React.FC<PrizeManagerProps> = ({ prizes, setPrizes }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempPrize, setTempPrize] = useState<Partial<Prize>>({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleAdd = () => {
-    const newPrize: Prize = { id: generateId(), name: '新奖项', count: 1, drawnCount: 0, description: '', image: '' };
+    const newPrize: Prize = { id: generateId(), name: '新奖项', count: 1, drawnCount: 0, description: '', image: '🎁' };
     setPrizes([...prizes, newPrize]);
     startEdit(newPrize);
   };
@@ -21,17 +28,25 @@ export const PrizeManager: React.FC<PrizeManagerProps> = ({ prizes, setPrizes })
   const startEdit = (prize: Prize) => { 
     setEditingId(prize.id); 
     setTempPrize({ ...prize }); 
+    setShowEmojiPicker(false);
   };
   
   const cancelEdit = () => { 
     setEditingId(null); 
     setTempPrize({}); 
+    setShowEmojiPicker(false);
   };
   
   const saveEdit = () => {
     if (!editingId) return;
     setPrizes(prizes.map((p) => (p.id === editingId ? { ...p, ...tempPrize } as Prize : p)));
     setEditingId(null);
+  };
+
+  const isEmoji = (str: string | undefined) => {
+    if (!str) return false;
+    // Simple check for common emoji or single character string that isn't a URL
+    return str.length <= 4 && !str.startsWith('http');
   };
 
   return (
@@ -84,7 +99,42 @@ export const PrizeManager: React.FC<PrizeManagerProps> = ({ prizes, setPrizes })
                     </div>
 
                     <input type="text" value={tempPrize.description} onChange={(e) => setTempPrize({ ...tempPrize, description: e.target.value })} className="liquid-input w-full px-4 py-2 rounded-xl text-xs" placeholder="描述信息" />
-                    <input type="text" value={tempPrize.image} onChange={(e) => setTempPrize({ ...tempPrize, image: e.target.value })} className="liquid-input w-full px-4 py-2 rounded-xl text-[10px]" placeholder="图片URL" />
+                    
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-gray-400 block uppercase">图标或图片URL</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={tempPrize.image} 
+                          onChange={(e) => setTempPrize({ ...tempPrize, image: e.target.value })} 
+                          className="liquid-input flex-1 px-4 py-2 rounded-xl text-[10px]" 
+                          placeholder="输入URL或Emoji" 
+                        />
+                        <button 
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className={`p-2 rounded-xl border transition-all ${showEmojiPicker ? 'bg-brand-primary border-brand-primary text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'}`}
+                        >
+                          <Smile size={18} />
+                        </button>
+                      </div>
+                      
+                      {showEmojiPicker && (
+                        <div className="grid grid-cols-5 gap-2 p-3 bg-black/40 rounded-2xl border border-white/10 animate-fade-in">
+                          {COMMON_EMOJIS.map(emoji => (
+                            <button 
+                              key={emoji}
+                              onClick={() => {
+                                setTempPrize({ ...tempPrize, image: emoji });
+                                setShowEmojiPicker(false);
+                              }}
+                              className="text-2xl hover:scale-125 transition-transform"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex gap-2 pt-2">
@@ -96,7 +146,13 @@ export const PrizeManager: React.FC<PrizeManagerProps> = ({ prizes, setPrizes })
                 <div className="flex flex-col">
                   <div className="relative h-36 flex items-center justify-center p-6 bg-gradient-to-b from-brand-primary/5 to-transparent overflow-hidden">
                     {prize.image ? (
-                      <img src={prize.image} alt={prize.name} className="h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110" />
+                      isEmoji(prize.image) ? (
+                        <span className="text-7xl drop-shadow-2xl transition-transform duration-700 group-hover:scale-125 select-none">
+                          {prize.image}
+                        </span>
+                      ) : (
+                        <img src={prize.image} alt={prize.name} className="h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110" />
+                      )
                     ) : (
                       <Gift size={48} className="text-gray-700 opacity-20" />
                     )}

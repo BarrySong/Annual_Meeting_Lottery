@@ -5,6 +5,12 @@ import { Trophy, Check, Sparkles, Zap, ChevronLeft, ChevronRight, Heart, Star, F
 import { Participant, Prize, Winner } from '../types';
 import { generateId } from '../utils/storage';
 
+interface LotteryMachineProps {
+  participants: Participant[];
+  prizes: Prize[];
+  onDrawComplete: (winners: Winner[]) => void;
+}
+
 const FestiveDecoration = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
     {/* Floating Lanterns */}
@@ -55,10 +61,16 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
 
   const hasPrizes = prizes && prizes.length > 0;
 
-  const getPrizeAt = (offset: number) => {
+  // FIX: Added default value 0 for offset to satisfy argument requirement
+  const getPrizeAt = (offset: number = 0) => {
     if (!hasPrizes) return null;
     const index = (activePrizeIndex + offset + prizes.length) % prizes.length;
     return { prize: prizes[index], index };
+  };
+
+  const isEmoji = (str: string | undefined) => {
+    if (!str) return false;
+    return str.length <= 4 && !str.startsWith('http');
   };
 
   const initAudio = () => {
@@ -84,7 +96,6 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      // FIX: Added required 'now + 0.1' argument to osc.stop()
       osc.stop(now + 0.1);
       return;
     }
@@ -149,7 +160,6 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
             availableParticipants[Math.floor(Math.random() * availableParticipants.length)]
           );
           setCurrentDisplayNames(batch);
-          // FIX: Pass required 'tick' argument to playSound
           playSound('tick');
           lastUpdateTime.current = t;
         }
@@ -212,6 +222,21 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
     );
   }
 
+  const renderPrizeImage = (prize: Prize | null, className: string = "w-full h-full object-contain") => {
+    if (!prize) return null;
+    if (isEmoji(prize.image)) {
+      return (
+        <span className="text-[100px] leading-none select-none drop-shadow-2xl floating">
+          {prize.image}
+        </span>
+      );
+    }
+    if (prize.image) {
+      return <img src={prize.image} className={className} alt={prize.name} />;
+    }
+    return <Trophy className="text-brand-primary opacity-20" strokeWidth={0.8} />;
+  };
+
   return (
     <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden">
       <FestiveDecoration />
@@ -271,11 +296,17 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
                   className="absolute left-[8%] xl:left-[18%] w-48 h-64 glass-card rounded-[40px] border-white/5 opacity-15 blur-[3px] scale-90 hover:opacity-40 transition-all duration-700 hover:scale-95 z-0"
                 >
                   <div className="flex flex-col items-center justify-center gap-4 text-center p-6 grayscale h-full">
-                    {leftPrize.prize.image ? (
-                      <img src={leftPrize.prize.image} className="w-32 h-32 object-contain opacity-60" alt="" />
-                    ) : (
-                      <Trophy size={48} className="text-white/40" />
-                    )}
+                    <div className="w-24 h-24 flex items-center justify-center opacity-60">
+                      {isEmoji(leftPrize.prize.image) ? (
+                        <span className="text-5xl">{leftPrize.prize.image}</span>
+                      ) : (
+                        leftPrize.prize.image ? (
+                          <img src={leftPrize.prize.image} className="w-full h-full object-contain" alt="" />
+                        ) : (
+                          <Trophy size={48} className="text-white/40" />
+                        )
+                      )}
+                    </div>
                     <div className="text-white/40 font-black text-[10px] uppercase tracking-widest truncate w-full px-2">{leftPrize.prize.name}</div>
                   </div>
                 </button>
@@ -285,12 +316,8 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
               <div className="relative z-20 group">
                 <div className="absolute -inset-16 bg-brand-primary/20 blur-[120px] rounded-full animate-pulse opacity-40"></div>
                 
-                <div className="relative w-80 h-80 glass-card rounded-[60px] border-brand-primary/30 flex items-center justify-center p-12 floating shimmer shadow-[0_50px_100px_rgba(0,0,0,0.8)]">
-                  {currentPrize?.image ? (
-                    <img src={currentPrize.image} className="w-full h-full object-contain scale-110" alt={currentPrize.name} />
-                  ) : (
-                    <Trophy size={110} className="text-brand-primary" strokeWidth={0.8} />
-                  )}
+                <div className="relative w-80 h-80 glass-card rounded-[60px] border-brand-primary/30 flex items-center justify-center p-12 floating shimmer shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden">
+                  {renderPrizeImage(currentPrize, "w-full h-full object-contain scale-110")}
                 </div>
 
                 {/* Micro Navigation */}
@@ -319,11 +346,17 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
                   className="absolute right-[8%] xl:right-[18%] w-48 h-64 glass-card rounded-[40px] border-white/5 opacity-15 blur-[3px] scale-90 hover:opacity-40 transition-all duration-700 hover:scale-95 z-0"
                 >
                   <div className="flex flex-col items-center justify-center gap-4 text-center p-6 grayscale h-full">
-                    {rightPrize.prize.image ? (
-                      <img src={rightPrize.prize.image} className="w-32 h-32 object-contain opacity-60" alt="" />
-                    ) : (
-                      <Trophy size={48} className="text-white/40" />
-                    )}
+                    <div className="w-24 h-24 flex items-center justify-center opacity-60">
+                      {isEmoji(rightPrize.prize.image) ? (
+                        <span className="text-5xl">{rightPrize.prize.image}</span>
+                      ) : (
+                        rightPrize.prize.image ? (
+                          <img src={rightPrize.prize.image} className="w-full h-full object-contain" alt="" />
+                        ) : (
+                          <Trophy size={48} className="text-white/40" />
+                        )
+                      )}
+                    </div>
                     <div className="text-white/40 font-black text-[10px] uppercase tracking-widest truncate w-full px-2">{rightPrize.prize.name}</div>
                   </div>
                 </button>
@@ -437,9 +470,3 @@ export const LotteryMachine: React.FC<LotteryMachineProps> = ({
     </div>
   );
 };
-
-interface LotteryMachineProps {
-  participants: Participant[];
-  prizes: Prize[];
-  onDrawComplete: (winners: Winner[]) => void;
-}
