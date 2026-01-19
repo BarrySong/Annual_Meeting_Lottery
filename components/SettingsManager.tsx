@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Type, Save, CheckCircle, Sparkles, Calendar, Database, Cloud, AlertCircle } from 'lucide-react';
+import { Type, Save, CheckCircle, Sparkles, Calendar, Database, Cloud, AlertCircle, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { SiteConfig, AppState } from '../types';
 
 interface SettingsManagerProps {
@@ -33,8 +33,42 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ siteConfig, on
         <p className="text-gray-500 font-bold tracking-[0.2em] uppercase text-[10px]">Cloud Branding & System Sync</p>
       </div>
 
-      {/* Brand Settings */}
-      <div className="w-full glass-card rounded-[40px] p-8 md:p-10 border border-white/10 space-y-6 shadow-2xl relative overflow-hidden">
+      {/* Brand & Logo Settings */}
+      <div className="w-full glass-card rounded-[40px] p-8 md:p-10 border border-white/10 space-y-8 shadow-2xl relative overflow-hidden">
+        
+        {/* Logo Section */}
+        <div className="space-y-4 relative z-10">
+          <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            <ImageIcon size={14} className="text-brand-primary" />
+            品牌标志 (LOGO URL)
+          </label>
+          <div className="flex gap-4 items-center">
+            <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 group relative">
+              {tempConfig.logoUrl ? (
+                <img src={tempConfig.logoUrl} alt="Preview" className="w-full h-full object-contain p-2" />
+              ) : (
+                <ImageIcon size={24} className="text-gray-700" />
+              )}
+              <div className="absolute inset-0 bg-brand-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-[8px] font-black text-white uppercase">Preview</span>
+              </div>
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="relative">
+                <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="https://example.com/logo.png"
+                  value={tempConfig.logoUrl || ''}
+                  onChange={(e) => setTempConfig(prev => ({ ...prev, logoUrl: e.target.value }))}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl font-medium text-sm bg-white/5 border border-white/10 text-white outline-none focus:border-brand-primary/50 transition-colors"
+                />
+              </div>
+              <p className="text-[9px] text-gray-500 font-bold uppercase tracking-tight italic">* 请输入透明背景的 PNG 图片链接以获得最佳视觉效果</p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-3 relative z-10">
           <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
             <Type size={14} className="text-brand-primary" />
