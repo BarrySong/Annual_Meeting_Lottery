@@ -20,9 +20,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('lottery');
   const [dbStatus, setDbStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
   
-  // Global State
+  // Global State - No more initial load from storage.ts
   const [participants, setParticipants] = useState<Participant[]>([]);
-  // Fix: Removed reference to non-existent 'prizesData' and used INITIAL_PRIZES
   const [prizes, setPrizes] = useState<Prize[]>(INITIAL_PRIZES);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({ 
@@ -54,7 +53,7 @@ function App() {
         setWinners(data.winners || []);
         setSiteConfig(data.siteConfig || { brandName: 'CYPRESSTEL', eventName: 'Annual Gala 2025' });
       } else {
-        // 初始化云端
+        // 初始化云端数据
         set(dataRef, {
           participants: [],
           prizes: INITIAL_PRIZES,
@@ -72,7 +71,7 @@ function App() {
 
   const syncToCloud = (updates: Partial<AppState>) => {
     update(ref(db, 'lottery_app'), updates).catch(err => {
-      console.warn("Update queued/failed:", err);
+      console.warn("Cloud update failed:", err);
       setDbStatus('offline');
     });
   };
@@ -119,7 +118,7 @@ function App() {
   };
 
   const handleClearHistory = () => {
-      if (window.confirm('确定要清空所有中奖记录吗？')) {
+      if (window.confirm('确定要清空所有中奖记录吗？此操作将立即同步至所有大屏幕。')) {
           syncToCloud({
             winners: [],
             participants: participants.map(p => ({ ...p, isWinner: false })),
